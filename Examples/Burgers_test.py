@@ -22,6 +22,7 @@ npde_path = os.path.abspath('..')
 import sys 
 sys.path.insert(0, npde_path) 
 
+save_location = npde_path + '/Trained_Models/Burgers'
     
 import Neural_PDE as npde
 # %%
@@ -43,7 +44,9 @@ NPDE_parameters = {'Sampling_Method': 'Random',
 
 
 #PDE 
-PDE_parameters = {'Equation': 'u_t + u*u_x - 0.1*u_xx', 
+PDE_parameters = {'Inputs': 't, x',
+                  'Outputs': 'u',
+                  'Equation': 'D(u, t) + u*D(u, x) - 0.1*D2(u, x)',
                   'order': 2,
                   'lower_range': [0.0, -8.0], #Float 
                   'upper_range': [10.0, 8.0], #Float
@@ -65,12 +68,12 @@ def pde_func(model, X):
 
     pde_loss = u_t + u*u_x - 0.1*u_xx
             
-    # u = forward(model, X)
-    # u_X = tf.gradients(u, X)
-    # u_XX = tf.gradients(u_X, X)
+    # u = model(X, training=True)
+    # u_X = tf.gradients(u, X)[0]
+    # u_XX = tf.gradients(u_X, X)[0]
         
-    # pde_loss = u_X[0][:, 0:1] + u*u_X[0][:, 1:2] - 0.1*u_XX[0][:, 1:2]
-    
+    # pde_loss = u_X[:, 0:1] + u*u_X[:, 1:2] - 0.1*u_XX[:, 1:2]
+
     return pde_loss
 
 # %%
@@ -133,14 +136,14 @@ train_config = {'Optimizer': 'adam',
                  'learning_rate': 0.001, 
                  'Iterations' : 5000}
 
-model.train(train_config, training_data)
+time_GD = model.train(train_config, training_data)
 
 # %%
 train_config = {'Optimizer': 'L-BFGS-B',
                  'learning_rate': None, 
                  'Iterations' : None}
 
-model.train(train_config, training_data)
+time_QN = model.train(train_config, training_data)
 # %%
 u_pred = model.predict(X_star)
 u_pred = np.reshape(u_pred, np.shape(Exact))
@@ -160,3 +163,16 @@ def moving_plot(u_actual, u_sol):
         plt.clf()
         
 moving_plot(Exact, u_pred)
+
+
+# %%
+tf.saved_model.save(model.model, save_location)
+# %%
+trained_model = tf.saved_model.load(save_location)
+
+train_config = {'Optimizer': 'adam',
+                  'learning_rate': 0.001, 
+                  'Iterations' : 5000}
+
+# time_GD_retrain = model.retrain(trained_model, train_config, training_data)
+

@@ -22,6 +22,9 @@ def setup(NN, NPDE, PDE, pde_func):
     num_neurons = NN['num_neurons']
     output_size = NN['output_neurons']
     
+    eqn_str = PDE['Equation']
+    input_str = PDE['Inputs']
+    output_str = PDE['Outputs']
     lb = np.asarray(PDE['lower_range'])
     ub = np.asarray(PDE['upper_range'])
     BC = PDE['Boundary_Condition']
@@ -38,7 +41,10 @@ def setup(NN, NPDE, PDE, pde_func):
                                          activation, 
                                          initialiser,
                                          N_f,
-                                         pde_func)
+                                         pde_func,
+                                         eqn_str,
+                                         input_str,
+                                         output_str)
             
     
     return model

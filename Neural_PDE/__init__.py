@@ -10,6 +10,7 @@ Initialising the NPDE TF 2.X
 from . import main 
 from . import network
 from . import training_ground
+from . import pde
 from . import boundary_conditions
 from . import options 
 from . import sampler

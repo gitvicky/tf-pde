@@ -127,14 +127,14 @@ train_config = {'Optimizer': 'adam',
                  'learning_rate': 0.001, 
                  'Iterations' : 5000}
 
-model.train(train_config, training_data)
+time_GD = model.train(train_config, training_data)
 
 # %%
 train_config = {'Optimizer': 'L-BFGS-B',
                  'learning_rate': None, 
                  'Iterations' : None}
 
-model.train(train_config, training_data)
+time_QN = model.train(train_config, training_data)
 # %%
 
 u_pred = model.predict(X_star)

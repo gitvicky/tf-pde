@@ -14,23 +14,25 @@ import numpy as np
 import tensorflow as tf
 
 from .network import Network
+from .pde import PDE
 from . import boundary_conditions
 from .sampler import Sampler
 from . import options 
 from . import qnw
 
-class TrainingGround(Network, Sampler):
-    def __init__(self, layers, lb, ub, activation, initializer, N_f, pde):
+class TrainingGround(Network, Sampler, PDE):
+    def __init__(self, layers, lb, ub, activation, initializer, N_f, pde_func, eqn_str, in_vars, out_vars):
         
         Network.__init__(self, layers, lb, ub, activation, initializer)
         Sampler.__init__(self, N_f, subspace_N = int(N_f/10))   #Percentage to be sammpled from the subspace. 
-        
+        PDE.__init__(self, eqn_str, in_vars, out_vars)
         self.layers = layers 
         self.input_size = self.layers[0]
         self.output_size = self.layers[-1]
         
         self.bc = boundary_conditions.select('Dirichlet')
-        self.pde = pde
+        # self.pde = pde
+        self.pde = PDE.func
         
         self.model = Network.initialize_NN(self)
         self.trainable_params = self.model.trainable_weights
@@ -49,11 +51,9 @@ class TrainingGround(Network, Sampler):
         return bc_loss
         
     def pde_func(self, X):
-        pde_loss = self.pde(self.model, X)
+        pde_loss = self.pde(self, X)
         return pde_loss
     
-
-
     
     
     def loss_func(self, X_i, u_i, X_b, u_b, X_f):
@@ -146,9 +146,16 @@ class TrainingGround(Network, Sampler):
             
                     
             
-        
-        print("Total Training Time : {}".format(time.time() - start_time))
+        end_time = time.time() - start_time 
+        return end_time
         
         
     def predict(self, X):
         return self.model(X).numpy()
+    
+    
+    def retrain(self, model, train_config, train_data):
+        self.model = model
+        self.trainable_params = self.model.trainable_variables
+        
+        return self.train(train_config, train_data)
