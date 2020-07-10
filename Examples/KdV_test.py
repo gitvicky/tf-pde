@@ -142,4 +142,4 @@ u_pred = model.predict(X_star)
 u_pred = np.reshape(u_pred, np.shape(Exact))
 
 
-npde.plotter.evolution_plot(Exact, u_pred)
+# npde.plotter.evolution_plot(Exact, u_pred)
