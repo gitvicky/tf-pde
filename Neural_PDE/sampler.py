@@ -4,7 +4,9 @@
 Created on Thu Jun 18 16:02:09 2020
 
 Neural PDE - Tensorflow 2.X
-Module : Spatio-Temporal Residual Sampler
+Module :  Sampler
+
+Samples points from the domain space according to the specified procedure. 
 """
 import numpy as np
 import tensorflow as tf 
@@ -14,11 +16,27 @@ from pyDOE import lhs
 class Sampler(object):
     
     def __init__(self, N_samples, subspace_N):
+        """
+        
+
+        Parameters
+        ----------
+        N_samples : INT
+            Number of points sampled from the domain space. 
+        subspace_N : INT
+            Number of points we want to sample from each subspace. 
+
+        Returns
+        -------
+        None.
+
+        """
 
         self.N = N_samples
         self.ssN = subspace_N
         
     def residual(self, n, t_bounds):
+        """ Calculates the residual value for across each subspace """
         residual_across_time = []
         
         for ii in range(n-1):
@@ -33,6 +51,7 @@ class Sampler(object):
 
         
     def str_sampler(self):
+        """ Samples ssN points from the subspace with the worst residual performance """
         n = int(self.N/self.ssN)
         t_bounds = np.linspace(self.lb[0], self.ub[0], n)
         
@@ -49,5 +68,6 @@ class Sampler(object):
         
     
     def uniform_sampler(self):
+        """ Uniformly samples N points from across the domain space of interest """
         X_f = self.lb + (self.ub-self.lb)*lhs(self.input_size, self.N) 
         return X_f

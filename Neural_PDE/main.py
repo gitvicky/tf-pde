@@ -7,6 +7,11 @@ Created on Thu Jun 18 15:59:18 2020
 
 Neural PDE - Tensorflow 2.X
 Module : Main
+
+
+Basefile which takes in the input parameters that define the PDE, NN and NPDE, extracts the relevant information
+from those dicts and is send them to set up ther network and the training graphs. 
+
 """
 
 import numpy as np
@@ -14,6 +19,26 @@ import numpy as np
 from . import training_ground
 
 def setup(NN, NPDE, PDE, pde_func):
+    """
+    
+
+    Parameters
+    ----------
+    NN : DICT
+        Neural Network Architecture Parameters.
+    NPDE : DICT
+        Sampling Methods and Points to be sampled. 
+    PDE : DICT
+       PDE in string, input parameters, output parameters, IC, BC, lower and upper ranges
+    pde_func : FUNC
+        Explcitly defined domain function.
+
+    Returns
+    -------
+    model : OBJECT
+        Object of the class Training Ground instantiated with the defined input parameters. 
+
+    """
     
     N_f = NPDE['N_domain']
     

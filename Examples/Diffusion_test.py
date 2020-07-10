@@ -10,7 +10,7 @@ Neural PDE - Tensorflow 1.14
 Testing with Diffusion Equation (2D)
 
 IC: 
-BC: Zoer-Flux Boundary Condition
+BC: Zero-Flux Boundary Condition
 
 """
 import time 
@@ -25,6 +25,9 @@ npde_path = os.path.abspath('..')
 
 save_location = npde_path + '/Trained_Models/Diffusion'
 
+print(npde_path)
+
+
 import sys 
 sys.path.insert(0, npde_path) 
 
@@ -35,8 +38,8 @@ import Neural_PDE as npde
 NN_parameters = {
                 'input_neurons' : 3,
                 'output_neurons' : 1,
-                'num_layers' : 6,
-                'num_neurons' : 128,
+                'num_layers' : 2,
+                'num_neurons' : 25,
                 }
 
 
@@ -49,8 +52,9 @@ NPDE_parameters = {'Sampling_Method': 'Random',
 
 
 #PDE 
-PDE_parameters = {'Equation': 'u_t - 0.1*(u_xx - u_yy)', 
-                  'order': 2,
+PDE_parameters = {'Inputs': 't, x',
+                  'Outputs': 'u',
+                  'Equation': 'D(u, t) - 0.1*(D2(u, x) + D2(u, y))',
                   'lower_range': [0.0, 0.0, 0.0], #Float 
                   'upper_range': [10.0, 1.0, 1.0], #Float
                   'Boundary_Condition': "Neumann",
@@ -60,16 +64,19 @@ PDE_parameters = {'Equation': 'u_t - 0.1*(u_xx - u_yy)',
                  }
 
 
+@tf.function
+@tf.autograph.experimental.do_not_convert
 def pde_func(model, X):
     t = X[:, 0:1]
     x = X[:, 1:2]
     y = X[:, 2:3]
     
-    u = model(tf.concat([t,x, y],1), training=True)
+    u = model(tf.concat([t, x, y],1), training=True)
 
     u_t = tf.gradients(u, t)[0]
     u_x = tf.gradients(u, x)[0]
     u_xx = tf.gradients(u_x, x)[0]
+    print(u_xx)
     u_y = tf.gradients(u, y)[0]
     u_yy = tf.gradients(u_y, y)[0]
 
@@ -138,9 +145,9 @@ X_f = lb + (ub-lb)*lhs(3, N_f)
 
 
 
-training_data = {'X_i': X_i, 'u_i': u_i,
-                'X_b': X_b, 'u_b': u_b,
-                'X_f': X_f}
+training_data = {'X_i': X_i.astype('float64'), 'u_i': u_i.astype('float64'),
+                'X_b': X_b.astype('float64'), 'u_b': u_b.astype('float64'),
+                'X_f': X_f.astype('float64')}
 
 # %%
 
@@ -149,7 +156,7 @@ model = npde.main.setup(NN_parameters, NPDE_parameters, PDE_parameters, pde_func
 # %%
 train_config = {'Optimizer': 'adam',
                  'learning_rate': 0.001, 
-                 'Iterations' : 5000}
+                 'Iterations' : 50000}
 
 time_GD = model.train(train_config, training_data)
 
@@ -165,15 +172,19 @@ time_QN = model.train(train_config, training_data)
 
 tf.saved_model.save(model.model, save_location)
 print('\n')
-print("Total Time : {}".format(time_GD + time_QN))
+total_time = time_GD + time_QN
+print("Total Time : {}".format(total_time))
 # %%
+
+# model_location = npde_path + '/Trained_Models/Diffusion_Initial'
+# trained_model = tf.saved_model.load(model_location)
 
 # T_star = np.expand_dims(np.repeat(t, len(XY_star)), 1)
 # X_star_tiled = np.tile(XY_star, (len(t), 1))
 
 # X_star = np.hstack((T_star, X_star_tiled))
 
-# u_pred = model.predict(X_star)
+# u_pred = trained_model(X_star)
 # u_pred = np.reshape(u_pred, np.shape(u))
 
 
@@ -186,3 +197,4 @@ print("Total Time : {}".format(time_GD + time_QN))
 #         plt.pause(0.01)
 #         plt.clf()
         
+# moving_plot(u, u_pred)

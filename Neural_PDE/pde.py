@@ -7,6 +7,9 @@ Created on Tue Jun 30 18:58:15 2020
 
 Neural PDE - Tensorflow 2.X
 Module : PDE Module 
+
+Module with the PDE class that takes in the user defined pde parameters and creates a symbolic expression which 
+is executed using lambdify. 
 """
 
 import numpy as np
@@ -18,15 +21,34 @@ from sympy.parsing.sympy_parser import parse_expr
 
 class PDE(object):
     def __init__(self, eqn_str, in_vars, out_vars):
+        """
+        
+
+        Parameters
+        ----------
+        eqn_str : STR
+            The PDE in string with the specified format.
+        in_vars : INT
+            Number of input variables.
+        out_vars : INT
+            Number of output variables.
+
+        Returns
+        -------
+        None.
+
+        """
         self.num_inputs = len(in_vars)
         self.num_outputs = len(out_vars)
         
-        # eqn_str = eqn_str.replace('('+out_vars, '('+in_vars)
         in_vars = sympy.symbols(in_vars)
         out_vars = sympy.symbols(out_vars)
         
+        if self.num_outputs ==1:
+           self.all_vars = list(in_vars) + [out_vars]
+        else: 
+            self.all_vars = list(in_vars) + list(out_vars)
 
-        self.all_vars = list(in_vars) + [out_vars]
         self.expr = parse_expr(eqn_str)
     
         self.fn = sympy.lambdify(self.all_vars, self.expr, [{'D': self.first_deriv, 'D2': self.second_deriv, 'D3':self.third_deriv}, 'tensorflow'])

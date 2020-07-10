@@ -8,6 +8,7 @@ Created on Thu Jun 18 15:22:29 2020
 
 Neural PDE - Tensorflow 2.X
 Module : Boundary Conditions 
+
 """
 
 import tensorflow as tf 

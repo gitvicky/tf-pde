@@ -8,6 +8,8 @@ Created on Thu Jun 18 15:17:47 2020
 
 Neural PDE - Tensorflow 2.X
 Module : Model
+
+Training Ground Class which houses all the associated training functions - loss functions, gradient functions, callbacks, training loops and evaluation functions 
 """
 import time
 import numpy as np
@@ -21,24 +23,64 @@ from . import options
 from . import qnw
 
 class TrainingGround(Network, Sampler, PDE):
+    
     def __init__(self, layers, lb, ub, activation, initializer, N_f, pde_func, eqn_str, in_vars, out_vars):
+        """
+        
+
+        Parameters
+        ----------
+        layers : LIST
+            Nunmber of neurons in each layer
+        lb : ARRAY
+            Lower Range of the time and space domain
+        ub : ARRAY
+            Upper Range of the time and space domain
+        activation : STR
+            Name of the activation Function
+        initializer : STR
+            Name of the Initialiser for the neural network weights
+        N_f : INT
+            Number of points sampled from the domain space.
+        pde_func : FUNC
+            Explcitly defined domain function.
+         eqn_str : STR
+            The PDE in string with the specified format.
+        in_vars : INT
+            Number of input variables.
+        out_vars : INT
+            Number of output variables.
+
+        Returns
+        -------
+        None.
+
+        """
         
         Network.__init__(self, layers, lb, ub, activation, initializer)
         Sampler.__init__(self, N_f, subspace_N = int(N_f/10))   #Percentage to be sammpled from the subspace. 
         PDE.__init__(self, eqn_str, in_vars, out_vars)
+        
         self.layers = layers 
         self.input_size = self.layers[0]
         self.output_size = self.layers[-1]
         
         self.bc = boundary_conditions.select('Dirichlet')
-        # self.pde = pde
-        self.pde = PDE.func
         
         self.model = Network.initialize_NN(self)
         self.trainable_params = self.model.trainable_weights
 
         self.loss_list =[]
         
+        self.pde = PDE.func  #Implicit 
+        # self.pde = pde_func #Explicit
+
+    #Explicit
+    # def pde_func(self, X):
+    #     pde_loss = self.pde(self.model, X)
+    #     return pde_loss
+
+
         
     def ic_func(self, X, u):
         u_pred = self.model(X, training=True)
@@ -49,7 +91,8 @@ class TrainingGround(Network, Sampler, PDE):
     def bc_func(self, X, u):
         bc_loss = self.bc(self.model, X, u)
         return bc_loss
-        
+     
+    #Implicit
     def pde_func(self, X):
         pde_loss = self.pde(self, X)
         return pde_loss
@@ -69,6 +112,30 @@ class TrainingGround(Network, Sampler, PDE):
     @tf.function
     @tf.autograph.experimental.do_not_convert
     def loss_and_gradients(self, X_i, u_i, X_b, u_b, X_f):
+        """
+        
+
+        Parameters
+        ----------
+        X_i : NUMPY ARRAY
+            Initial input points.
+        u_i : NUMPY ARRAY
+            Initial outputs.
+        X_b : NUMPY ARRAY
+            Boundary input points.
+        u_b : NUMPY ARRAY
+            Boundary outputs.
+        X_f : NUMPY ARRAY
+            Domain input points.
+
+        Returns
+        -------
+        model_loss : TENSOR
+            Sum of Initial, Boundary and Domain MSE loss
+        model_gradients : TENSOR
+            Loss gradient with respect to thge model trainable params. 
+
+        """
         with tf.GradientTape() as tape:
             model_loss=self.loss_func(X_i, u_i, X_b, u_b, X_f)
         model_gradients = tape.gradient(model_loss, self.trainable_params)

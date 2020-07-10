@@ -44,8 +44,9 @@ NPDE_parameters = {'Sampling_Method': 'Random',
 
 
 #PDE 
-PDE_parameters = {'Equation': 'u_t + u*u_x + 0.0025*u_xxx', 
-                  'order': 2,
+PDE_parameters = {'Inputs': 't, x',
+                  'Outputs': 'u',
+                  'Equation': 'D(u, t) + u*D(u, x) + 0.0025*D3(u, x)',
                   'lower_range': [0.0, -1.0], #Float 
                   'upper_range': [1.0, 1.0], #Float
                   'Boundary_Condition': "Dirichlet",

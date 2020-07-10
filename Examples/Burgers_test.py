@@ -47,7 +47,6 @@ NPDE_parameters = {'Sampling_Method': 'Random',
 PDE_parameters = {'Inputs': 't, x',
                   'Outputs': 'u',
                   'Equation': 'D(u, t) + u*D(u, x) - 0.1*D2(u, x)',
-                  'order': 2,
                   'lower_range': [0.0, -8.0], #Float 
                   'upper_range': [10.0, 8.0], #Float
                   'Boundary_Condition': "Dirichlet",
@@ -176,3 +175,4 @@ train_config = {'Optimizer': 'adam',
 
 # time_GD_retrain = model.retrain(trained_model, train_config, training_data)
 
+mse = tf.reduce_mean(tf.square(tf.Variable(u_pred) - tf.Variable(Exact))).numpy()
