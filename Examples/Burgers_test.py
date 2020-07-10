@@ -138,7 +138,7 @@ train_config = {'Optimizer': 'adam',
 time_GD = model.train(train_config, training_data)
 
 # %%
-train_config = {'Optimizer': 'L-BFGS',
+train_config = {'Optimizer': 'L-BFGS-B',
                  'learning_rate': None, 
                  'Iterations' : None}
 

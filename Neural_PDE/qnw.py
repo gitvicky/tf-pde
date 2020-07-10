@@ -73,8 +73,10 @@ def TFP_Keras_Wrapper(model, loss_func, X_i, u_i, X_b, u_b, X_f):
         grads = tf.dynamic_stitch(idx, grads)
 
         # print out iteration & loss
-        val_and_grads_1d.iter.assign_add(1)
-        tf.print("Iter:", val_and_grads_1d.iter, "Loss:", loss_value, "Time:", np.round(time.time() - start_time, 2))
+        val_and_grads_1d.iter.assign_add(1)       
+        print('QN.  It: %d, Loss: %.3e, Time: %.2f' % 
+                (val_and_grads_1d.iter, loss_value,  np.round(time.time() - start_time, 3)))
+        # tf.print("Iter:", val_and_grads_1d.iter, "Loss:", loss_value, "Time:", np.round(time.time() - start_time, 2))
 
         return loss_value, grads
     

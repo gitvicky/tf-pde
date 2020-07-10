@@ -14,6 +14,22 @@ import matplotlib.pyplot as plt
 
 
 def evolution_plot(u_actual, u_pred):
+    """
+    Plots frame by frame evolution of the neural network solution in the 
+    1D space along with the baseline solution
+
+    Parameters
+    ----------
+    u_actual : 2D NUMPY ARRAY
+        True solution 
+    u_pred : 2D NUMPY ARRAY
+        Neural Network Prediction
+
+    Returns
+    -------
+    None.
+
+    """
     
     actual_col = '#302387'
     nn_col = '#DF0054'
@@ -30,6 +46,25 @@ def evolution_plot(u_actual, u_pred):
 
         
 def space_time_error(u_actual, u_pred, x, t):
+    """
+    Plots the Absolute across the bounded space-time
+
+    Parameters
+    ----------
+    u_actual : 2D NUMPY ARRAY
+        True Solution
+    u_pred : 2D Numpy Array
+        Neural PDE Solution
+    x : 1D NUMPY ARRAY
+        x input array.
+    t : 1D NUMPY ARRAY
+        t input array.
+
+    Returns
+    -------
+    None.
+
+    """
     abs_error = np.abs(u_actual - u_pred)
     
     xx, tt = np.meshgrid(x, t)
@@ -38,12 +73,4 @@ def space_time_error(u_actual, u_pred, x, t):
     plt.xlabel('x')
     plt.ylabel('t')
     plt.title("Absolute Error across Space Time")
-    plt.colorbar()
-  
-def contour_plot(u_val):
-    plt.figure()
-    plt.contourf(u_val, cmap='plasma')
-    plt.xlabel('#x ')
-    plt.ylabel('#t')
-    plt.title("Field Value across Space Time")
     plt.colorbar()
