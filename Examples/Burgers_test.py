@@ -138,7 +138,7 @@ train_config = {'Optimizer': 'adam',
 time_GD = model.train(train_config, training_data)
 
 # %%
-train_config = {'Optimizer': 'L-BFGS-B',
+train_config = {'Optimizer': 'L-BFGS',
                  'learning_rate': None, 
                  'Iterations' : None}
 
@@ -147,32 +147,4 @@ time_QN = model.train(train_config, training_data)
 u_pred = model.predict(X_star)
 u_pred = np.reshape(u_pred, np.shape(Exact))
 
-def moving_plot(u_actual, u_sol):
-    actual_col = '#302387'
-    nn_col = '#DF0054'
-    
-    plt.figure()
-    plt.plot(0, 0, c = actual_col, label='Actual')
-    plt.plot(0, 0, c = nn_col, label='NN', alpha = 0.5)
-    
-    for ii in range(len(t)):
-        plt.plot(x, u_actual[ii], c = actual_col)
-        plt.plot(x, u_sol[ii], c = nn_col)
-        plt.pause(0.01)
-        plt.clf()
-        
-moving_plot(Exact, u_pred)
-
-
-# %%
-tf.saved_model.save(model.model, save_location)
-# %%
-trained_model = tf.saved_model.load(save_location)
-
-train_config = {'Optimizer': 'adam',
-                  'learning_rate': 0.001, 
-                  'Iterations' : 5000}
-
-# time_GD_retrain = model.retrain(trained_model, train_config, training_data)
-
-mse = tf.reduce_mean(tf.square(tf.Variable(u_pred) - tf.Variable(Exact))).numpy()
+npde.plotter.evolution_plot(Exact, u_pred)

@@ -210,9 +210,19 @@ class TrainingGround(Network, Sampler, PDE):
             
             func.assign_new_model_parameters(trained_variables.x)
 
+
+        elif kind == "QN_TFP":
             
+            func = qnw.TFP_Keras_Wrapper(self.model, self.loss_func, X_i, u_i, X_b, u_b, X_f)
+            # convert initial model parameters to a 1D tf.Tensor
+            init_params = tf.dynamic_stitch(func.idx, self.model.trainable_variables)
+            
+            trained_variables = optimizer(value_and_gradients_function=func,
+                                                   initial_position=init_params,
+                                                   max_iterations=500)
+            
+            func.assign_new_model_parameters(trained_variables.position)
                     
-            
         end_time = time.time() - start_time 
         return end_time
         

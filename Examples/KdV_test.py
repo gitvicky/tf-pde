@@ -141,19 +141,5 @@ time_QN = model.train(train_config, training_data)
 u_pred = model.predict(X_star)
 u_pred = np.reshape(u_pred, np.shape(Exact))
 
-def moving_plot(u_actual, u_sol):
-    actual_col = '#302387'
-    nn_col = '#DF0054'
-    
-    plt.figure()
-    plt.plot(0, 0, c = actual_col, label='Actual')
-    plt.plot(0, 0, c = nn_col, label='NN', alpha = 0.5)
-    plt.legend()
-    
-    for ii in range(len(t)):
-        plt.plot(x, u_actual[ii], c = actual_col)
-        plt.plot(x, u_sol[ii], c = nn_col)
-        plt.pause(0.01)
-        plt.clf()
-        
-moving_plot(Exact, u_pred)
+
+npde.plotter.evolution_plot(Exact, u_pred)

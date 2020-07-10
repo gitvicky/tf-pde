@@ -23,7 +23,6 @@ from . import options
 class Network(object):
     def __init__(self, layers, lb, ub, activation, initializer, num_blocks=None):
         """
-        
 
         Parameters
         ----------
@@ -75,8 +74,7 @@ class Network(object):
         return model
     
     def res_net_block(self, input_data, neurons):
-        """ Initialises a single resnet block """
-      x = keras.layers.Dense(units = neurons, activation=self.activation, 
+      x = keras.layers.Dense(units = neurons, activation=self.activation,
                             kernel_initializer = self.initializer)(input_data)
       x = keras.layers.BatchNormalization()(x)
       x = keras.layers.Dense(units = neurons, activation=self.activation, 
