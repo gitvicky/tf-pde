@@ -104,7 +104,7 @@ class TrainingGround(Network, Sampler, PDE):
         initial_loss = self.ic_func(X_i, u_i)
         boundary_loss = self.bc_func(X_b, u_b)
         domain_loss = self.pde_func(X_f)
-        
+                
         return tf.reduce_mean(tf.square(initial_loss)) + \
                             tf.reduce_mean(tf.square(boundary_loss)) + \
                             tf.reduce_mean(tf.square(domain_loss))

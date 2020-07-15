@@ -6,7 +6,7 @@ Created on Thu Jun 18 15:01:56 2020
 @author: Vicky
 
 Neural PDE - Tensorflow 2.X
-Module : Network
+Module : Network with tf.Module
 """
 
 import numpy as np
@@ -20,8 +20,8 @@ tf.keras.backend.set_floatx('float64')
 
 from . import options
 
-class Network(object):
-    def __init__(self, layers, lb, ub, activation, initializer, num_blocks=None):
+class Network(tf.Module):
+    def __init__(self, layers, lb, ub, activation, initializer, num_blocks=None, name=None):
         """
 
         Parameters
@@ -44,7 +44,7 @@ class Network(object):
         None.
 
         """
-        self.layers = layers
+        # self.layers = layers
         self.num_inputs = layers[0]
         self.num_outputs = layers[-1]
         self.neurons = layers[1]
@@ -57,13 +57,33 @@ class Network(object):
         self.activation = options.get_activation(activation)
         self.initializer = options.get_initializer(initializer)
         
+        with self.name_scope:
+            self.layers.append(keras.layers.Dense(self.layers[1] , input_shape=(self.layers[0],),
+                                     activation=self.activation,
+                                     kernel_initializer=self.initializer))
+            
+            for ii in range(2, len(self.layers) - 2):
+                self.layers.append(keras.layers.Dense(units = self.layers[ii],
+                                activation = self.activation,
+                                kernel_initializer = self.initializer
+                                ))
+            self.layers.append(keras.layers.Dense(units = self.layers[-1],
+                activation = None,
+                kernel_initializer = self.initializer
+                ))
+            
+    @tf.Module.with_name_scope
+    def __call__(self, x):
+        x = 2.0*(x - self.lb)/(self.ub - self.lb) - 1.0
+        for layer in self.layers:
+            x = layer(x)
+        return x
+        
         
     def initialize_NN(self):
         """ Initialises a fully connected deep nerual network """
         model = keras.Sequential()
-        model.add(keras.layers.Dense(self.layers[1] , input_shape=(self.layers[0],),
-                                     activation=self.activation,
-                                     kernel_initializer=self.initializer))
+        model.add(keras.layers.Dense(self.layers[1] , input_shape=(self.layers[0],)))
         for ii in range(2, len(self.layers) - 2):
             model.add(keras.layers.Dense(units = self.layers[ii],
                             activation = self.activation,
