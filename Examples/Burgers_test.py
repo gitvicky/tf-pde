@@ -37,8 +37,8 @@ NN_parameters = {
 
 #Neural PDE Hyperparameters
 NPDE_parameters = {'Sampling_Method': 'Random',
-                   'N_initial' : 100, #Number of Randomly sampled Data points from the IC vector
-                   'N_boundary' : 100, #Number of Boundary Points
+                   'N_initial' : 300, #Number of Randomly sampled Data points from the IC vector
+                   'N_boundary' : 500, #Number of Boundary Points
                    'N_domain' : 5000 #Number of Domain points generated
                   }
 
@@ -49,9 +49,9 @@ PDE_parameters = {'Inputs': 't, x',
                   'Equation': 'D(u, t) + u*D(u, x) - 0.1*D2(u, x)',
                   'lower_range': [0.0, -8.0], #Float 
                   'upper_range': [10.0, 8.0], #Float
-                  'Boundary_Condition': "Dirichlet",
+                  'Boundary_Condition': "Periodic",
                   'Boundary_Vals' : None,
-                  'Initial_Condition': None,
+                  'Initial_Condition': lambda x: -np.sin((np.pi*x)/8),
                   'Initial_Vals': None
                  }
 @tf.function
@@ -76,6 +76,8 @@ def pde_func(model, X):
     return pde_loss
 
 # %%
+'''
+#Using Simulation Data at the Initial and Boundary Values (BC would be Dirichlet under that case )
 
 N_f = NPDE_parameters['N_domain']
 N_i = NPDE_parameters['N_initial']
@@ -125,6 +127,33 @@ u_b = u_b[idx,:]
 training_data = {'X_i': X_i, 'u_i': u_i,
                 'X_b': X_b, 'u_b': u_b,
                 'X_f': X_f}
+'''
+# %%
+
+N_i = NPDE_parameters['N_initial']
+N_b = NPDE_parameters['N_boundary']
+N_f = NPDE_parameters['N_domain']
+
+lb = PDE_parameters['lower_range']
+ub = PDE_parameters['upper_range']
+
+Initial_Condition = PDE_parameters['Initial_Condition']
+Boundary_vals = PDE_parameters['Boundary_Vals']
+
+X_i = npde.sampler.initial_sampler(N_i, lb, ub)
+X_b = npde.sampler.boundary_sampler(N_b, lb, ub)
+X_f = npde.sampler.domain_sampler(N_f, lb, ub)
+
+u_i = Initial_Condition(X_i[:,1:2])
+u_b = Boundary_vals
+
+X_i = 2.0*(X_i - np.asarray(lb))/(np.asarray(ub) - np.asarray(lb)) - 1.0
+X_b = 2.0*(X_b - np.asarray(lb))/(np.asarray(ub) - np.asarray(lb)) - 1.0
+X_f = 2.0*(X_f - np.asarray(lb))/(np.asarray(ub) - np.asarray(lb)) - 1.0
+
+training_data = {'X_i': X_i, 'u_i': u_i,
+                'X_b': X_b, 'u_b': u_b,
+                'X_f': X_f}
 
 # %%
 
@@ -143,7 +172,20 @@ train_config = {'Optimizer': 'L-BFGS-B',
                  'Iterations' : None}
 
 time_QN = model.train(train_config, training_data)
-# %%
+# %
+data = scipy.io.loadmat(npde_path + '/Data/burgers.mat')
+
+t = data['t'].flatten()[:,None]
+x = data['x'].flatten()[:,None]
+Exact = np.real(data['usol']).T
+
+X, T = np.meshgrid(x,t)
+
+X_star = np.hstack((T.flatten()[:,None], X.flatten()[:,None])) 
+u_star = Exact.flatten()[:,None]              
+
+X_star = 2.0*(X_star - np.asarray(lb))/(np.asarray(ub) - np.asarray(lb)) - 1.0
+
 u_pred = model.predict(X_star)
 u_pred = np.reshape(u_pred, np.shape(Exact))
 

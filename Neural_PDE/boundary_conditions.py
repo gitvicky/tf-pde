@@ -37,10 +37,11 @@ def neumann(model, X, f): #Currently only for 1D
 @tf.function
 @tf.autograph.experimental.do_not_convert
 def periodic(model, X, f): # Currently for only 1D
-    n = int(len(X)/2)
-    u =  model(X, training=True)
-    u_X = tf.gradients(u, X)[0]
-    u_XX = tf.gradients(u_X, X)[0]
+    t = X[:, 0:1]
+    x = X[:, 1:2]
+    n = int(X.shape[0]/2)
+    u =  model(tf.concat([t, x], 1), training=True)
+    u_x = tf.gradients(u, x)[0]
     
-    return (u[:n] - u[n:]) + (u_X[:,1:2][:n] - u_X[:,1:2][:n]) + (u_XX[:,1:2][:n] - u_XX[:,1:2][:n])
+    return (u[:n] - u[n:]) + (u_x[:n] - u_x[:n])
 

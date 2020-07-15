@@ -24,7 +24,7 @@ from . import qnw
 
 class TrainingGround(Network, Sampler, PDE):
     
-    def __init__(self, layers, lb, ub, activation, initializer, N_f, pde_func, eqn_str, in_vars, out_vars):
+    def __init__(self, layers, lb, ub, activation, initializer, BC, BC_Vals, N_f, pde_func, eqn_str, in_vars, out_vars):
         """
         
 
@@ -65,7 +65,7 @@ class TrainingGround(Network, Sampler, PDE):
         self.input_size = self.layers[0]
         self.output_size = self.layers[-1]
         
-        self.bc = boundary_conditions.select('Dirichlet')
+        self.bc = boundary_conditions.select(BC)
         
         self.model = Network.initialize_NN(self)
         self.trainable_params = self.model.trainable_weights

@@ -12,6 +12,26 @@ import numpy as np
 import tensorflow as tf 
 from pyDOE import lhs
 
+def domain_sampler(N, lb, ub):
+    lb = np.asarray(lb)
+    ub = np.asarray(ub)
+    return lb + (ub-lb)*lhs(2, N)
+
+def boundary_sampler(N, lb, ub):
+    lb = np.asarray(lb)
+    ub = np.asarray(ub)
+    N_2 = int(N/2)
+    X_b = lb + (ub-lb)*lhs(2, N)
+    X_b[0:N_2, 1] = lb[1]
+    X_b[N_2:2*N_2, 1] = ub[1]
+    return X_b
+
+def initial_sampler(N, lb, ub):
+    lb = np.asarray(lb)
+    ub = np.asarray(ub)
+    X_i = lb + (ub-lb)*lhs(2, N)
+    X_i[:, 0] = np.zeros(N)
+    return X_i
 
 class Sampler(object):
     

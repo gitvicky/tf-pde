@@ -53,6 +53,7 @@ def setup(NN, NPDE, PDE, pde_func):
     lb = np.asarray(PDE['lower_range'])
     ub = np.asarray(PDE['upper_range'])
     BC = PDE['Boundary_Condition']
+    BC_Vals = PDE['Boundary_Vals']
 
     layers = np.concatenate([[input_size], num_neurons*np.ones(num_layers), [output_size]]).astype(int).tolist() 
     
@@ -65,6 +66,8 @@ def setup(NN, NPDE, PDE, pde_func):
                                          lb, ub,
                                          activation, 
                                          initialiser,
+                                         BC, 
+                                         BC_Vals,
                                          N_f,
                                          pde_func,
                                          eqn_str,
