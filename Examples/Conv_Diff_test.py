@@ -6,17 +6,16 @@ Created on Thu Jun 18 16:04:32 2020
 @author: Vicky
 
 Neural PDE - Tensorflow 2.X
-Testing with Burgers Equation
+Testing with Convection Diffusion Equation
 
-PDE: u_t + u*u_x - 0.1*u_xx
-IC: u(0, x) = -sin(pi.x/8)
+PDE: u_t - 0.2*u_xx +0.1*u 
+IC: u(0, x) = 4x - 4x^2,
 BC: Periodic 
-Domain: t ∈ [0,10],  x ∈ [-8,8]
+Domain: t ∈ [0,0.2],  x ∈ [0,1.0]
 """
 
 import numpy as np 
 import tensorflow as tf 
-import scipy.io
 from pyDOE import lhs
 
 import os 
@@ -40,7 +39,7 @@ NN_parameters = {'Network_Type': 'Regular',
 #Neural PDE Hyperparameters
 NPDE_parameters = {'Sampling_Method': 'Initial',
                    'N_initial' : 100, #Number of Randomly sampled Data points from the IC vector
-                   'N_boundary' : 100, #Number of Boundary Points
+                   'N_boundary' : 300, #Number of Boundary Points
                    'N_domain' : 5000 #Number of Domain points generated
                   }
 
@@ -48,82 +47,74 @@ NPDE_parameters = {'Sampling_Method': 'Initial',
 #PDE 
 PDE_parameters = {'Inputs': 't, x',
                   'Outputs': 'u',
-                  'Equation': 'D(u, t) + u*D(u, x) - 0.1*D2(u, x)',
-                  'lower_range': [0.0, -8.0], #Float 
-                  'upper_range': [10.0, 8.0], #Float
+                  'Equation': 'D(u, t) - 0.2*D2(u, x) - 0.1*u',
+                  'lower_range': [0.0, 0.0], #Float 
+                  'upper_range': [0.2, 1.0], #Float
                   'Boundary_Condition': "Dirichlet", #Periodic 
                   'Boundary_Vals' : None,
-                  'Initial_Condition': lambda x: -np.sin((np.pi*x)/8),
+                  'Initial_Condition': lambda x: 4*x - 4*x**2,
                   'Initial_Vals': None
                  }
 
 @tf.function
 @tf.autograph.experimental.do_not_convert
-def pde_func(model, X):
+def pde_func(forward, X, w, b):
     t = X[:, 0:1]
     x = X[:, 1:2]
-    
-    u = model(tf.concat([t,x], 1), training=True)
+        
+    u = forward(tf.concat([t,x],1), w, b)
     u_t = tf.gradients(u, t)[0]
     u_x = tf.gradients(u, x)[0]
     u_xx = tf.gradients(u_x, x)[0]
 
-    pde_loss = u_t + u*u_x - 0.1*u_xx
-            
-    # u = model(X, training=True)
-    # u_X = tf.gradients(u, X)[0]
-    # u_XX = tf.gradients(u_X, X)[0]
-        
-    # pde_loss = u_X[:, 0:1] + u*u_X[:, 1:2] - 0.1*u_XX[:, 1:2]
-
+    pde_loss = u_t - 0.2*u_xx + 0.1*u
+    
     return pde_loss
 
-# %%
 
+# %%
 #Using Simulation Data at the Initial and Boundary Values (BC would be Dirichlet under that case )
 
 N_f = NPDE_parameters['N_domain']
 N_i = NPDE_parameters['N_initial']
 N_b = NPDE_parameters['N_boundary']
 
-data = scipy.io.loadmat(npde_path + '/Data/burgers.mat')
+data = np.load('/Users/Vicky/Documents/Code/NPDE_TF1/Data/ConvDiff_1D.npz')
 
 t = data['t'].flatten()[:,None]
 x = data['x'].flatten()[:,None]
-Exact = np.real(data['usol']).T
+
+Exact = np.real(data['U_sol']).T
 
 X, T = np.meshgrid(x,t)
 
-X_star = np.hstack((T.flatten()[:,None], X.flatten()[:,None])) 
+X_star = np.hstack((T.flatten()[:,None], X.flatten()[:,None])) #Flattened array with the inputs  X and T 
 u_star = Exact.flatten()[:,None]              
 
 # Domain bounds
-lb = X_star.min(0) 
-ub = X_star.max(0)
+lb = X_star.min(0) #Lower bounds of x and t 
+ub = X_star.max(0) #Upper bounds of x and t
     
-X_i = np.hstack((T[0:1,:].T, X[0:1,:].T))
-u_i = Exact[0:1,:].T
+X_i = np.hstack((T[0:1,:].T, X[0:1,:].T)) #Initial condition value of X (x=-1....1) and T (t = 0) 
+u_i = Exact[0:1,:].T #Initial Condition value of the field u
 
-X_lb = np.hstack((T[:,0:1], X[:,0:1])) 
-u_lb = Exact[:,0:1] 
-X_ub = np.hstack((T[:,-1:], X[:,-1:])) 
-u_ub = Exact[:,-1:] 
-
-u_lb = np.zeros((len(u_lb),1))
-u_ub = np.zeros((len(u_ub),1))  
+X_lb = np.hstack((T[:,0:1], X[:,0:1])) #Lower Boundary condition value of X (x = -1) and T (t = 0...0.99)
+u_lb = Exact[:,0:1] #Bound Condition value of the field u at (x = 11) and T (t = 0...0.99)
+X_ub = np.hstack((T[:,-1:], X[:,-1:])) #Uppe r Boundary condition value of X (x = 1) and T (t = 0...0.99)
+u_ub = Exact[:,-1:] #Bound Condition value of the field u at (x = 11) and T (t = 0...0.99)
 
 X_b = np.vstack((X_lb, X_ub))
 u_b = np.vstack((u_lb, u_ub))
 
-X_f = lb + (ub-lb)*lhs(2, N_f) 
+X_f = lb + (ub-lb)*lhs(2, N_f) #Factors generated using LHS 
 
 idx = np.random.choice(X_i.shape[0], N_i, replace=False)
-X_i = X_i[idx, :]
-u_i = u_i[idx,:]
+X_i = X_i[idx, :] #Randomly Extract the N_u number of x and t values. 
+u_i = u_i[idx,:] #Extract the N_u number of field values 
 
 idx = np.random.choice(X_b.shape[0], N_b, replace=False)
-X_b = X_b[idx, :] 
-u_b = u_b[idx,:]
+X_b = X_b[idx, :] #Randomly Extract the N_u number of x and t values. 
+u_b = u_b[idx,:] #Extract the N_u number of field values 
 
 
 
@@ -177,7 +168,7 @@ train_config = {'Optimizer': 'L-BFGS-B',
 
 time_QN = model.train(train_config, training_data)
 # %%
-data = scipy.io.loadmat(npde_path + '/Data/burgers.mat')
+data = np.load('/Users/Vicky/Documents/Code/NPDE_TF1/Data/ConvDiff_1D.npz')
 
 t = data['t'].flatten()[:,None]
 x = data['x'].flatten()[:,None]

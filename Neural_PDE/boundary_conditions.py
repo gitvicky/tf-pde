@@ -14,11 +14,15 @@ Module : Boundary Conditions
 import tensorflow as tf 
 
 def select(name):
-    return {
-        "Dirichlet": dirichlet,
-        "Neumann": neumann,
-        "Periodic": periodic
-    }[name]
+    try: 
+        return {
+            "Dirichlet": dirichlet,
+            "Neumann": neumann,
+            "Periodic": periodic
+            }[name]
+    except KeyError:
+        raise KeyError("Unknown Boundary Condition")
+
 
 @tf.function
 @tf.autograph.experimental.do_not_convert

@@ -41,7 +41,9 @@ def setup(NN, NPDE, PDE, pde_func):
     """
     
     N_f = NPDE['N_domain']
+    sampler = NPDE['Sampling_Method']
     
+    network_type = NN['Network_Type']
     input_size = NN['input_neurons']
     num_layers = NN['num_layers']
     num_neurons = NN['num_neurons']
@@ -69,10 +71,12 @@ def setup(NN, NPDE, PDE, pde_func):
                                          BC, 
                                          BC_Vals,
                                          N_f,
+                                         network_type,
                                          pde_func,
                                          eqn_str,
                                          input_str,
-                                         output_str)
+                                         output_str,
+                                         sampler)
             
     
     return model

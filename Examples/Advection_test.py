@@ -7,12 +7,15 @@ Created on Tue Jul 14 18:41:54 2020
 
 Neural PDE - Tensorflow 2.X
 Testing with Advection Equation 
+
+PDE: u_t + 1.0*u_x 
+IC: u(0, x) = exp^(-200(x-0.25)^2),
+BC: Periodic 
+Domain: t ∈ [0,1.5],  x ∈ [0,1]
 """
 
 import numpy as np 
 import tensorflow as tf 
-from matplotlib import pyplot as plt 
-import scipy.io
 from pyDOE import lhs
 
 import os 
@@ -26,16 +29,16 @@ sys.path.insert(0, npde_path)
 import Neural_PDE as npde
 # %%
 #Neural Network Hyperparameters
-NN_parameters = {
+NN_parameters = {'Network_Type': 'Regular',
                 'input_neurons' : 2,
                 'output_neurons' : 1,
-                'num_layers' : 4,
-                'num_neurons' : 64
+                'num_layers' : 3,
+                'num_neurons' : 100
                 }
 
 
 #Neural PDE Hyperparameters
-NPDE_parameters = {'Sampling_Method': 'Random',
+NPDE_parameters = {'Sampling_Method': '',
                    'N_initial' : 100, #Number of Randomly sampled Data points from the IC vector
                    'N_boundary' : 300, #Number of Boundary Points
                    'N_domain' : 5000 #Number of Domain points generated
@@ -48,7 +51,7 @@ PDE_parameters = {'Inputs': 't, x',
                   'Equation': 'D(u, t) + 1.0*D(u, x)',
                   'lower_range': [0.0, 0.0], #Float 
                   'upper_range': [1.5, 1.0], #Float
-                  'Boundary_Condition': "Periodic",
+                  'Boundary_Condition': "Dirichlet",
                   'Boundary_Vals' : None,
                   'Initial_Condition': lambda x: np.exp(-200*(x-0.25)**2),
                   'Initial_Vals': None
@@ -70,7 +73,6 @@ def pde_func(model, X):
 
 
 # %%
-'''
 #Using Simulation Data at the Initial and Boundary Values (BC would be Dirichlet under that case)
 
 N_f = NPDE_parameters['N_domain']
@@ -121,9 +123,10 @@ u_b = u_b[idx,:]
 training_data = {'X_i': X_i, 'u_i': u_i,
                 'X_b': X_b, 'u_b': u_b,
                 'X_f': X_f}
-'''
+
 # %%
 
+'''
 N_i = NPDE_parameters['N_initial']
 N_b = NPDE_parameters['N_boundary']
 N_f = NPDE_parameters['N_domain']
@@ -145,6 +148,7 @@ training_data = {'X_i': X_i, 'u_i': u_i,
                 'X_b': X_b, 'u_b': u_b,
                 'X_f': X_f}
 
+# '''
 # %%
 
 model = npde.main.setup(NN_parameters, NPDE_parameters, PDE_parameters, pde_func)

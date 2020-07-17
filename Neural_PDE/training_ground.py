@@ -24,7 +24,7 @@ from . import qnw
 
 class TrainingGround(Network, Sampler, PDE):
     
-    def __init__(self, layers, lb, ub, activation, initializer, BC, BC_Vals, N_f, pde_func, eqn_str, in_vars, out_vars):
+    def __init__(self, layers, lb, ub, activation, initializer, BC, BC_Vals, N_f, network_type, pde_func, eqn_str, in_vars, out_vars, sampler):
         """
         
 
@@ -67,14 +67,22 @@ class TrainingGround(Network, Sampler, PDE):
         
         self.bc = boundary_conditions.select(BC)
         
-        self.model = Network.initialize_NN(self)
+        if network_type == 'Regular':
+            self.model = Network.initialize_NN(self)
+        elif network_type == 'Resnet':
+            self.model = Network.initialize_resnet(self, num_blocks=2)
+        else:
+            raise ValueError("Unknown Network Type. It should be either 'Regular' or 'Resnet'")
+
         self.trainable_params = self.model.trainable_weights
 
-        self.loss_list =[]
         
         self.pde = PDE.func  #Implicit 
         # self.pde = pde_func #Explicit
-
+        
+        self.loss_list =[]
+        self.sampler = sampler
+        
     #Explicit
     # def pde_func(self, X):
     #     pde_loss = self.pde(self.model, X)
@@ -167,8 +175,10 @@ class TrainingGround(Network, Sampler, PDE):
         self.init_time = time.time()
         
         if kind == "GD":
-        
-            nIter_2 = int(nIter/2)
+            if self.sampler == 'Initial':
+                nIter_2 = nIter
+            else :
+                nIter_2 = int(nIter/2)
             
             for it in range(nIter):
                 
@@ -178,24 +188,37 @@ class TrainingGround(Network, Sampler, PDE):
                 if it%10 == 0:
                     self.callback_GD(it, model_loss)
                 
-                
-            # X_f_sampled = Sampler.str_sampler(self)
-            # # X_f_sampled = tf.concat([X_f, X_f_sampled], axis=0)
-            # X_f_sampled = np.vstack((X_f, X_f_sampled))
+             # if self.sampler == 'Residual':   
+                # X_f_sampled = Sampler.str_sampler(self)
+                # # X_f_sampled = tf.concat([X_f, X_f_sampled], axis=0)
+                # X_f_sampled = np.vstack((X_f, X_f_sampled))
+        
+                # for it in range(nIter_2, nIter):
     
-            # for it in range(nIter_2, nIter):
-
-            #     if it %500 ==0:
-            #         X_f_sampled = Sampler.str_sampler(self)
-            #         # X_f_sampled = tf.concat([X_f, X_f_sampled], axis=0)
-            #         X_f_sampled = np.vstack((X_f, X_f_sampled))
+                #     if it %500 ==0:
+                #         X_f_sampled = Sampler.str_sampler(self)
+                #         # X_f_sampled = tf.concat([X_f, X_f_sampled], axis=0)
+                #         X_f_sampled = np.vstack((X_f, X_f_sampled))
+                        
+                #     model_loss, model_gradients = self.loss_and_gradients(X_i, u_i, X_b, u_b, X_f_sampled)
+                #     optimizer.apply_gradients(zip(model_gradients, self.trainable_params))
                     
-            #     model_loss, model_gradients = self.loss_and_gradients(X_i, u_i, X_b, u_b, X_f_sampled)
-            #     optimizer.apply_gradients(zip(model_gradients, self.trainable_params))
+                #     if it%10 == 0:
+                #         self.callback_GD(it, model_loss)
                 
-            #     if it%10 == 0:
-            #         self.callback_GD(it, model_loss)
-
+            # elif self.sampler == 'Uniform':
+                # X_f_sampled = Sampler.uniform_sampler(self)
+        
+                # for it in range(nIter_2, nIter):
+    
+                #     if it %500 ==0:
+                #         X_f_sampled = Sampler.uniform_sampler(self)
+                        
+                #     model_loss, model_gradients = self.loss_and_gradients(X_i, u_i, X_b, u_b, X_f_sampled)
+                #     optimizer.apply_gradients(zip(model_gradients, self.trainable_params))
+                    
+                #     if it%10 == 0:
+                #         self.callback_GD(it, model_loss)
                     
         elif kind == "QN_Scipy":
             

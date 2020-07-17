@@ -9,8 +9,10 @@ Created on Tue Jun 16 12:32:44 2020
 Neural PDE - Tensorflow 1.14
 Testing with Diffusion Equation (2D)
 
-IC: 
-BC: Zero-Flux Boundary Condition
+PDE: u_t - 0.1(u_xx + u_yy)
+IC: u(0, x) = 
+BC: Neumann
+Domain: t ∈ [0,10],  x ∈ [0,1], y ∈ [0,1]
 
 """
 import time 

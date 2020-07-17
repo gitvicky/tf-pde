@@ -8,11 +8,15 @@ Created on Fri Jun 19 12:37:25 2020
 
 Neural PDE - Tensorflow 2.X
 Testing with Korteweg de Vries Equation
+
+PDE: u_t + u*u_x + 0.0025*u_xxx 
+IC: u(0, x) = cos(pi.x),
+BC: Periodic 
+Domain: t ∈ [0,1],  x ∈ [-1,1]
 """
 
 import numpy as np 
 import tensorflow as tf 
-from matplotlib import pyplot as plt 
 import scipy.io
 from pyDOE import lhs
 
@@ -27,7 +31,7 @@ sys.path.insert(0, npde_path)
 import Neural_PDE as npde
 # %%
 #Neural Network Hyperparameters
-NN_parameters = {
+NN_parameters = {'Network_Type': 'Regular',
                 'input_neurons' : 2,
                 'output_neurons' : 1,
                 'num_layers' : 4,
@@ -36,7 +40,7 @@ NN_parameters = {
 
 
 #Neural PDE Hyperparameters
-NPDE_parameters = {'Sampling_Method': 'Random',
+NPDE_parameters = {'Sampling_Method': 'Initial',
                    'N_initial' : 300, #Number of Randomly sampled Data points from the IC vector
                    'N_boundary' : 300, #Number of Boundary Points
                    'N_domain' : 20000 #Number of Domain points generated
@@ -122,7 +126,7 @@ training_data = {'X_i': X_i, 'u_i': u_i,
                 'X_f': X_f}
 
 # %%
-
+'''
 N_i = NPDE_parameters['N_initial']
 N_b = NPDE_parameters['N_boundary']
 N_f = NPDE_parameters['N_domain']
@@ -143,7 +147,7 @@ u_b = Boundary_vals
 training_data = {'X_i': X_i, 'u_i': u_i,
                 'X_b': X_b, 'u_b': u_b,
                 'X_f': X_f}
-
+'''
 # %%
 
 model = npde.main.setup(NN_parameters, NPDE_parameters, PDE_parameters, pde_func)

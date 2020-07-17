@@ -21,7 +21,7 @@ tf.keras.backend.set_floatx('float64')
 from . import options
 
 class Network(object):
-    def __init__(self, layers, lb, ub, activation, initializer, num_blocks=None):
+    def __init__(self, layers, lb, ub, activation, initializer):
         """
 
         Parameters
@@ -48,7 +48,6 @@ class Network(object):
         self.num_inputs = layers[0]
         self.num_outputs = layers[-1]
         self.neurons = layers[1]
-        self.num_blocks = num_blocks
 
         self.lb = lb 
         self.ub = ub 
@@ -58,39 +57,52 @@ class Network(object):
         self.initializer = options.get_initializer(initializer)
         
         
-    def initialize_NN(self):
-        """ Initialises a fully connected deep nerual network """
-        model = keras.Sequential()
-        model.add(keras.layers.Dense(self.layers[1] , input_shape=(self.layers[0],),
-                                     activation=self.activation,
-                                     kernel_initializer=self.initializer))
-        for ii in range(2, len(self.layers) - 2):
-            model.add(keras.layers.Dense(units = self.layers[ii],
-                            activation = self.activation,
-                            kernel_initializer = self.initializer
-                            ))
-        model.add(keras.layers.Dense(units = self.layers[-1],
-                activation = None,
-                kernel_initializer = self.initializer
-                ))
-        return model
+    # def initialize_NN(self):
+    #     """ Initialises a fully connected deep nerual network """
+    #     model = keras.Sequential()
+    #     model.add(keras.layers.Dense(self.layers[1] , input_shape=(self.layers[0],),
+    #                                  activation=self.activation,
+    #                                  kernel_initializer=self.initializer))
+    #     for ii in range(2, len(self.layers) - 1):
+    #         model.add(keras.layers.Dense(units = self.layers[ii],
+    #                         activation = self.activation,
+    #                         kernel_initializer = self.initializer
+    #                         ))
+    #     model.add(keras.layers.Dense(units = self.layers[-1],
+    #             activation = None,
+    #             kernel_initializer = self.initializer
+    #             ))
+    #     return model
     
+    def initialize_NN(self):
+        inputs =  keras.Input(shape=(self.layers[0],))
+        x = inputs
+        for ii in range(1, len(self.layers) - 1):
+            x = keras.layers.Dense(units = self.layers[ii], activation=self.activation,
+                                kernel_initializer = self.initializer)(x)
+        outputs = keras.layers.Dense(units = self.layers[-1],
+            activation = None,
+            kernel_initializer = self.initializer
+            )(x)
+        model = keras.Model(inputs, outputs)
+        return model
+
     def res_net_block(self, input_data, neurons):
       x = keras.layers.Dense(units = neurons, activation=self.activation,
                             kernel_initializer = self.initializer)(input_data)
-      x = keras.layers.BatchNormalization()(x)
+      # x = keras.layers.BatchNormalization()(x)
       x = keras.layers.Dense(units = neurons, activation=self.activation, 
                             kernel_initializer = self.initializer)(x) 
-      x = keras.layers.BatchNormalization()(x)
+      # x = keras.layers.BatchNormalization()(x)
       x = keras.layers.concatenate([x, input_data])
       x = keras.layers.Activation(self.activation)(x)
       return x
         
-    def initialize_resnet(self):
+    def initialize_resnet(self, num_blocks):
         """ Initialises a Resnet """
-        inputs = keras.Input(shape=self.num_inputs, )
+        inputs =  keras.Input(shape=(self.layers[0],))
         x = inputs 
-        for ii in range(self.num_blocks):
+        for ii in range(num_blocks):
             x = self.res_net_block(x, self.neurons)
         x = keras.layers.Dense(units = self.neurons, activation=self.activation, 
                             kernel_initializer = self.initializer)(x) 
