@@ -1,0 +1,7 @@
+numpy
+matplotlib
+scipy
+sympy
+tensorflow==2.2.0
+tensorflow-probability==0.10.0
+pydoe

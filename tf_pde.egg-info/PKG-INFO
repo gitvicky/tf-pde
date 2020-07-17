@@ -1,0 +1,13 @@
+Metadata-Version: 2.1
+Name: tf-pde
+Version: 0.2.dev0
+Summary: Deep learning library for solving partial differential equations
+Home-page: https://github.com/gitvicky/tf-pde
+Author: Vignesh Gopakumar
+Author-email: vignesh7g@gmail.com
+License: MIT
+Description: # Neural PDE
+        Autodiff based PDE solver implemented on the Tensorflow 2.x API. Package distribution under the MIT License
+        
+Platform: UNKNOWN
+Description-Content-Type: text/markdown
