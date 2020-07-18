@@ -1,2 +1,9 @@
 #Ignore Mac System Files
 .DS_store
+
+#Ignoring Distribution and Packaging Files
+dist/
+eggs/
+.eggs/
+*.egg-info/
+*.egg

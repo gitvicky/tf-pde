@@ -22,7 +22,7 @@ with open(path.join(this_directory, 'requirements.txt'), encoding='utf-8') as f:
     
 setup(
     name='tf-pde',
-    version='0.2dev',
+    version='0.3dev',
     description="Deep learning library for solving partial differential equations",
     author="Vignesh Gopakumar",
     author_email="vignesh7g@gmail.com",
