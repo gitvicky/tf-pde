@@ -26,7 +26,7 @@ import sys
 sys.path.insert(0, npde_path) 
 
 
-import Neural_PDE as npde
+import tfpde
 # %%
 #Neural Network Hyperparameters
 NN_parameters = {'Network_Type': 'Regular',
@@ -137,9 +137,9 @@ ub = PDE_parameters['upper_range']
 Initial_Condition = PDE_parameters['Initial_Condition']
 Boundary_vals = PDE_parameters['Boundary_Vals']
 
-X_i = npde.sampler.initial_sampler(N_i, lb, ub)
-X_b = npde.sampler.boundary_sampler(N_b, lb, ub)
-X_f = npde.sampler.domain_sampler(N_f, lb, ub)
+X_i = tfpde.sampler.initial_sampler(N_i, lb, ub)
+X_b = tfpde.sampler.boundary_sampler(N_b, lb, ub)
+X_f = tfpde.sampler.domain_sampler(N_f, lb, ub)
 
 u_i = Initial_Condition(X_i[:,1:2])
 u_b = Boundary_vals
@@ -151,7 +151,7 @@ training_data = {'X_i': X_i, 'u_i': u_i,
 # '''
 # %%
 
-model = npde.main.setup(NN_parameters, NPDE_parameters, PDE_parameters, pde_func)
+model = tfpde.main.setup(NN_parameters, NPDE_parameters, PDE_parameters, pde_func)
 
 # %%
 train_config = {'Optimizer': 'adam',
@@ -183,4 +183,4 @@ u_pred = model.predict(X_star)
 u_pred = np.reshape(u_pred, np.shape(Exact))
 
 
-npde.plotter.evolution_plot(Exact, u_pred)
+tfpde.plotter.evolution_plot(Exact, u_pred)

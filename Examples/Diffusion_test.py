@@ -34,7 +34,7 @@ import sys
 sys.path.insert(0, npde_path) 
 
 
-import Neural_PDE as npde
+import tfpde
 # %%
 #Neural Network Hyperparameters
 NN_parameters = {
@@ -153,7 +153,7 @@ training_data = {'X_i': X_i.astype('float64'), 'u_i': u_i.astype('float64'),
 
 # %%
 
-model = npde.main.setup(NN_parameters, NPDE_parameters, PDE_parameters, pde_func)
+model = tfpde.main.setup(NN_parameters, NPDE_parameters, PDE_parameters, pde_func)
 
 # %%
 train_config = {'Optimizer': 'adam',
