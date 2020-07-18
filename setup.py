@@ -29,6 +29,13 @@ setup(
     license='MIT',
     long_description = long_desc,
     long_description_content_type = "text/markdown",
-    install_requires = install_requires,
+    install_requires = ['numpy',
+                        'matplotlib',
+                        'scipy',
+                        'sympy',
+                        'tensorflow==2.2.0',
+                        'tensorflow-probability==0.10.0',
+                        'pydoe',
+    ],
 
 )
