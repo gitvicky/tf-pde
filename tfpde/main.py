@@ -18,7 +18,7 @@ import numpy as np
 
 from . import training_ground
 
-def setup(NN, NPDE, PDE, pde_func):
+def setup(NN, NPDE, PDE, pde_func=None):
     """
     
 

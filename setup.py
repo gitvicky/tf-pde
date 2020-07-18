@@ -20,7 +20,7 @@ with io.open("README.md", "r", encoding="utf-8") as f:
     
 setup(
     name='tf-pde',
-    version='0.6dev',
+    version='0.65dev',
     description="Deep learning library for solving partial differential equations",
     author="Vignesh Gopakumar",
     author_email="vignesh7g@gmail.com",
@@ -35,7 +35,8 @@ setup(
                         'sympy==1.6',
                         'tensorflow==2.2.0',
                         'tensorflow-probability==0.10.0',
-                        'pydoe==0.3.8',
+                        'pydoe==0.3.8'
+                        'cloudpickle==1.4.1',
     ],
 
 )

@@ -13,20 +13,14 @@ IC: u(0, x) = -sin(pi.x/8)
 BC: Periodic 
 Domain: t ∈ [0,10],  x ∈ [-8,8]
 """
-
-import numpy as np 
-import tensorflow as tf 
-import scipy.io
-from pyDOE import lhs
-
 import os 
-npde_path = os.path.abspath('..')
-#npde_path = npde_path + '/Neural_PDE'
+import numpy as np 
+import scipy.io
 
-import sys 
-sys.path.insert(0, npde_path) 
-    
 import tfpde
+
+
+    
 # %%
 #Neural Network Hyperparameters
 NN_parameters = {'Network_Type': 'Regular',
@@ -57,26 +51,6 @@ PDE_parameters = {'Inputs': 't, x',
                   'Initial_Vals': None
                  }
 
-@tf.function
-@tf.autograph.experimental.do_not_convert
-def pde_func(model, X):
-    t = X[:, 0:1]
-    x = X[:, 1:2]
-    
-    u = model(tf.concat([t,x], 1), training=True)
-    u_t = tf.gradients(u, t)[0]
-    u_x = tf.gradients(u, x)[0]
-    u_xx = tf.gradients(u_x, x)[0]
-
-    pde_loss = u_t + u*u_x - 0.1*u_xx
-            
-    # u = model(X, training=True)
-    # u_X = tf.gradients(u, X)[0]
-    # u_XX = tf.gradients(u_X, X)[0]
-        
-    # pde_loss = u_X[:, 0:1] + u*u_X[:, 1:2] - 0.1*u_XX[:, 1:2]
-
-    return pde_loss
 
 # %%
 
@@ -86,7 +60,9 @@ N_f = NPDE_parameters['N_domain']
 N_i = NPDE_parameters['N_initial']
 N_b = NPDE_parameters['N_boundary']
 
-data = scipy.io.loadmat(npde_path + '/Data/burgers.mat')
+# Data Location
+data_loc = os.path.abspath('..') + '/Data/'
+data = scipy.io.loadmat(data_loc +'burgers.mat')
 
 t = data['t'].flatten()[:,None]
 x = data['x'].flatten()[:,None]
@@ -115,7 +91,7 @@ u_ub = np.zeros((len(u_ub),1))
 X_b = np.vstack((X_lb, X_ub))
 u_b = np.vstack((u_lb, u_ub))
 
-X_f = lb + (ub-lb)*lhs(2, N_f) 
+X_f = tfpde.sampler.initial_sampler(N_f, lb, ub) 
 
 idx = np.random.choice(X_i.shape[0], N_i, replace=False)
 X_i = X_i[idx, :]
@@ -161,7 +137,7 @@ training_data = {'X_i': X_i, 'u_i': u_i,
 '''
 # %%
 
-model = tfpde.main.setup(NN_parameters, NPDE_parameters, PDE_parameters, pde_func)
+model = tfpde.main.setup(NN_parameters, NPDE_parameters, PDE_parameters)
 
 # %%
 train_config = {'Optimizer': 'adam',
@@ -177,7 +153,8 @@ train_config = {'Optimizer': 'L-BFGS-B',
 
 time_QN = model.train(train_config, training_data)
 # %%
-data = scipy.io.loadmat(npde_path + '/Data/burgers.mat')
+data_loc = os.path.abspath('..') + '/Data/'
+data = scipy.io.loadmat(data_loc +'burgers.mat')
 
 t = data['t'].flatten()[:,None]
 x = data['x'].flatten()[:,None]
