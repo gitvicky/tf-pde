@@ -20,7 +20,7 @@ with open("requirements.txt", "r") as f:
     
 setup(
     name='tf-pde',
-    version='0.3dev',
+    version='0.4dev',
     description="Deep learning library for solving partial differential equations",
     author="Vignesh Gopakumar",
     author_email="vignesh7g@gmail.com",
