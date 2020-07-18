@@ -15,12 +15,12 @@ from setuptools import find_packages
 with io.open("README.md", "r", encoding="utf-8") as f:
     long_desc = f.read()
 
-with open("requirements.txt", "r") as f:
-    install_requires = [x.strip() for x in f.readlines()]
+# with open("requirements.txt", "r") as f:
+#     install_requires = [x.strip() for x in f.readlines()]
     
 setup(
     name='tf-pde',
-    version='0.4dev',
+    version='0.5dev',
     description="Deep learning library for solving partial differential equations",
     author="Vignesh Gopakumar",
     author_email="vignesh7g@gmail.com",
