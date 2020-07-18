@@ -90,7 +90,7 @@ u_ub = Exact[:,-1:] #Bound Condition value of the field u at (x = 11) and T (t =
 X_b = np.vstack((X_lb, X_ub))
 u_b = np.vstack((u_lb, u_ub))
 
-X_f = tfpde.sampler.initial_sampler(N_f, lb, ub) #Factors generated using LHS 
+X_f = tfpde.sampler.domain_sampler(N_f, lb, ub) #Factors generated using LHS 
 
 idx = np.random.choice(X_i.shape[0], N_i, replace=False)
 X_i = X_i[idx, :] #Randomly Extract the N_u number of x and t values. 

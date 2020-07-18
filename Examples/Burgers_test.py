@@ -17,6 +17,7 @@ import os
 import numpy as np 
 import scipy.io
 
+from pyDOE import lhs
 import tfpde
 
 # %%
@@ -89,7 +90,7 @@ u_ub = np.zeros((len(u_ub),1))
 X_b = np.vstack((X_lb, X_ub))
 u_b = np.vstack((u_lb, u_ub))
 
-X_f = tfpde.sampler.initial_sampler(N_f, lb, ub) 
+X_f = tfpde.sampler.domain_sampler(N_f, lb, ub) 
 
 idx = np.random.choice(X_i.shape[0], N_i, replace=False)
 X_i = X_i[idx, :]
@@ -162,8 +163,6 @@ X, T = np.meshgrid(x,t)
 
 X_star = np.hstack((T.flatten()[:,None], X.flatten()[:,None])) 
 u_star = Exact.flatten()[:,None]              
-
-# X_star = 2.0*(X_star - np.asarray(lb))/(np.asarray(ub) - np.asarray(lb)) - 1.0
 
 u_pred = model.predict(X_star)
 u_pred = np.reshape(u_pred, np.shape(Exact))

@@ -15,7 +15,8 @@ from pyDOE import lhs
 def domain_sampler(N, lb, ub):
     lb = np.asarray(lb)
     ub = np.asarray(ub)
-    return lb + (ub-lb)*lhs(2, N)
+    X_f = lb + (ub-lb)*lhs(2, N)
+    return X_f
 
 def boundary_sampler(N, lb, ub):
     lb = np.asarray(lb)
