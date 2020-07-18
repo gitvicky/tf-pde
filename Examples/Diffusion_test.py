@@ -15,25 +15,10 @@ BC: Neumann
 Domain: t ∈ [0,10],  x ∈ [0,1], y ∈ [0,1]
 
 """
-import time 
-import numpy as np 
-import tensorflow as tf 
-from matplotlib import pyplot as plt 
-from pyDOE import lhs
+
 
 import os 
-npde_path = os.path.abspath('..')
-#npde_path = npde_path + '/Neural_PDE'
-
-save_location = npde_path + '/Trained_Models/Diffusion'
-
-print(npde_path)
-
-
-import sys 
-sys.path.insert(0, npde_path) 
-
-
+import numpy as np
 import tfpde
 # %%
 #Neural Network Hyperparameters
@@ -65,34 +50,15 @@ PDE_parameters = {'Inputs': 't, x',
                   'Initial_Vals': None
                  }
 
-
-@tf.function
-@tf.autograph.experimental.do_not_convert
-def pde_func(model, X):
-    t = X[:, 0:1]
-    x = X[:, 1:2]
-    y = X[:, 2:3]
-    
-    u = model(tf.concat([t, x, y],1), training=True)
-
-    u_t = tf.gradients(u, t)[0]
-    u_x = tf.gradients(u, x)[0]
-    u_xx = tf.gradients(u_x, x)[0]
-    print(u_xx)
-    u_y = tf.gradients(u, y)[0]
-    u_yy = tf.gradients(u_y, y)[0]
-
-    pde_loss = u_t - 0.1*(u_xx + u_yy)
-
-    return pde_loss
-
 # %%
 
 N_f = NPDE_parameters['N_domain']
 N_i = NPDE_parameters['N_initial']
 N_b = NPDE_parameters['N_boundary']
 
-data = np.load(npde_path + '/Data/Diffusion_data_2d.npz')
+# Data Location
+data_loc = os.path.abspath('..') + '/Data/'
+data = np.load(data_loc + 'diffusion_data_2d.npz')
 
 t = data['t'].flatten()[:,None]
 x = data['x'].flatten()[:,None]
@@ -143,8 +109,7 @@ X_b = X_BC[idx]
 u_b = u_BC[idx] 
 
 #Obtaining the specified number of Domain Points using Latin Hypercube Sampling within lower and upper bounds. 
-X_f = lb + (ub-lb)*lhs(3, N_f) 
-
+X_f = tfpde.sampler.initial_sampler(N_f, lb, ub)
 
 
 training_data = {'X_i': X_i.astype('float64'), 'u_i': u_i.astype('float64'),
@@ -153,7 +118,7 @@ training_data = {'X_i': X_i.astype('float64'), 'u_i': u_i.astype('float64'),
 
 # %%
 
-model = tfpde.main.setup(NN_parameters, NPDE_parameters, PDE_parameters, pde_func)
+model = tfpde.main.setup(NN_parameters, NPDE_parameters, PDE_parameters)
 
 # %%
 train_config = {'Optimizer': 'adam',
@@ -172,31 +137,12 @@ time_QN = model.train(train_config, training_data)
 
 # %%
 
-tf.saved_model.save(model.model, save_location)
-print('\n')
-total_time = time_GD + time_QN
-print("Total Time : {}".format(total_time))
-# %%
-
-# model_location = npde_path + '/Trained_Models/Diffusion_Initial'
-# trained_model = tf.saved_model.load(model_location)
-
 # T_star = np.expand_dims(np.repeat(t, len(XY_star)), 1)
 # X_star_tiled = np.tile(XY_star, (len(t), 1))
 
 # X_star = np.hstack((T_star, X_star_tiled))
 
-# u_pred = trained_model(X_star)
+# u_pred = model(X_star)
 # u_pred = np.reshape(u_pred, np.shape(u))
 
 
-# def moving_plot(u_actual, u_sol):
-#     plt.figure()
-    
-#     for ii in range(len(t)):
-#         plt.contourf(u_actual[ii], cmap='plasma')
-#         plt.contourf(u_sol[ii], alpha=0.5)
-#         plt.pause(0.01)
-#         plt.clf()
-        
-# moving_plot(u, u_pred)

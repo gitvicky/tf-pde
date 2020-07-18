@@ -13,18 +13,8 @@ IC: u(0, x) = exp^(-200(x-0.25)^2),
 BC: Periodic 
 Domain: t ∈ [0,1.5],  x ∈ [0,1]
 """
-
+import os
 import numpy as np 
-import tensorflow as tf 
-from pyDOE import lhs
-
-import os 
-npde_path = os.path.abspath('..')
-#npde_path = npde_path + '/Neural_PDE'
-
-import sys 
-sys.path.insert(0, npde_path) 
-
 
 import tfpde
 # %%
@@ -57,19 +47,6 @@ PDE_parameters = {'Inputs': 't, x',
                   'Initial_Vals': None
                  }
 
-@tf.function
-@tf.autograph.experimental.do_not_convert
-def pde_func(model, X):
-    t = X[:, 0:1]
-    x = X[:, 1:2]
-        
-    u = model(tf.concat([t,x],1), training=True)
-    u_t = tf.gradients(u, t)[0]
-    u_x = tf.gradients(u, x)[0]
-
-    pde_loss = u_t + 1.0*u_x
-    
-    return pde_loss
 
 
 # %%
@@ -79,7 +56,9 @@ N_f = NPDE_parameters['N_domain']
 N_i = NPDE_parameters['N_initial']
 N_b = NPDE_parameters['N_boundary']
 
-data = np.load(npde_path + '/Data/Advection.npz')
+# Data Location
+data_loc = os.path.abspath('..') + '/Data/'
+data = np.load(data_loc + 'Advection.npz')
 
 t = data['t'].flatten()[:,None]
 x = data['x'].flatten()[:,None]
@@ -108,7 +87,7 @@ u_ub = np.zeros((len(u_ub),1))
 X_b = np.vstack((X_lb, X_ub))
 u_b = np.vstack((u_lb, u_ub))
 
-X_f = lb + (ub-lb)*lhs(2, N_f) 
+X_f = tfpde.sampler.domain_sampler(N_f, lb, ub)
 
 idx = np.random.choice(X_i.shape[0], N_i, replace=False)
 X_i = X_i[idx, :]
@@ -151,7 +130,7 @@ training_data = {'X_i': X_i, 'u_i': u_i,
 # '''
 # %%
 
-model = tfpde.main.setup(NN_parameters, NPDE_parameters, PDE_parameters, pde_func)
+model = tfpde.main.setup(NN_parameters, NPDE_parameters, PDE_parameters)
 
 # %%
 train_config = {'Optimizer': 'adam',
@@ -167,17 +146,18 @@ train_config = {'Optimizer': 'L-BFGS',
 
 time_QN = model.train(train_config, training_data)
 # %%
-data = np.load(npde_path + '/Data/Advection.npz')
+# Data Location
+data_loc = os.path.abspath('..') + '/Data/'
+data = np.load(data_loc + 'Advection.npz')
 
 t = data['t'].flatten()[:,None]
 x = data['x'].flatten()[:,None]
 Exact = np.real(data['U'])
 
-
 X, T = np.meshgrid(x,t)
 
-X_star = np.hstack((T.flatten()[:,None], X.flatten()[:,None])) #Flattened array with the inputs  X and T 
-u_star = Exact.flatten()[:,None]              
+X_star = np.hstack((T.flatten()[:,None], X.flatten()[:,None])) 
+u_star = Exact.flatten()[:,None]         
 
 u_pred = model.predict(X_star)
 u_pred = np.reshape(u_pred, np.shape(Exact))

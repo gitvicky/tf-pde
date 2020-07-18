@@ -15,8 +15,6 @@ Domain: t ∈ [0,0.2],  x ∈ [0,1.0]
 """
 
 import numpy as np 
-import tensorflow as tf 
-from pyDOE import lhs
 
 import os 
 npde_path = os.path.abspath('..')
@@ -56,22 +54,6 @@ PDE_parameters = {'Inputs': 't, x',
                   'Initial_Vals': None
                  }
 
-@tf.function
-@tf.autograph.experimental.do_not_convert
-def pde_func(forward, X, w, b):
-    t = X[:, 0:1]
-    x = X[:, 1:2]
-        
-    u = forward(tf.concat([t,x],1), w, b)
-    u_t = tf.gradients(u, t)[0]
-    u_x = tf.gradients(u, x)[0]
-    u_xx = tf.gradients(u_x, x)[0]
-
-    pde_loss = u_t - 0.2*u_xx + 0.1*u
-    
-    return pde_loss
-
-
 # %%
 #Using Simulation Data at the Initial and Boundary Values (BC would be Dirichlet under that case )
 
@@ -79,7 +61,9 @@ N_f = NPDE_parameters['N_domain']
 N_i = NPDE_parameters['N_initial']
 N_b = NPDE_parameters['N_boundary']
 
-data = np.load(npde_path + '/Data/ConvDiff_1D.npz')
+# Data Location
+data_loc = os.path.abspath('..') + '/Data/'
+data = np.load(data_loc + 'ConvDiff_1D.npz')
 
 t = data['t'].flatten()[:,None]
 x = data['x'].flatten()[:,None]
@@ -106,7 +90,7 @@ u_ub = Exact[:,-1:] #Bound Condition value of the field u at (x = 11) and T (t =
 X_b = np.vstack((X_lb, X_ub))
 u_b = np.vstack((u_lb, u_ub))
 
-X_f = lb + (ub-lb)*lhs(2, N_f) #Factors generated using LHS 
+X_f = tfpde.sampler.initial_sampler(N_f, lb, ub) #Factors generated using LHS 
 
 idx = np.random.choice(X_i.shape[0], N_i, replace=False)
 X_i = X_i[idx, :] #Randomly Extract the N_u number of x and t values. 
@@ -152,7 +136,7 @@ training_data = {'X_i': X_i, 'u_i': u_i,
 '''
 # %%
 
-model = tfpde.main.setup(NN_parameters, NPDE_parameters, PDE_parameters, pde_func)
+model = tfpde.main.setup(NN_parameters, NPDE_parameters, PDE_parameters)
 
 # %%
 train_config = {'Optimizer': 'adam',
@@ -168,18 +152,19 @@ train_config = {'Optimizer': 'L-BFGS-B',
 
 time_QN = model.train(train_config, training_data)
 # %%
-
-data = np.load(npde_path + '/Data/ConvDiff_1D.npz')
-
+# Data Location
+data_loc = os.path.abspath('..') + '/Data/'
+data = np.load(data_loc + 'ConvDiff_1D.npz')
 
 t = data['t'].flatten()[:,None]
 x = data['x'].flatten()[:,None]
-Exact = np.real(data['usol']).T
+
+Exact = np.real(data['U_sol']).T
 
 X, T = np.meshgrid(x,t)
 
-X_star = np.hstack((T.flatten()[:,None], X.flatten()[:,None])) 
-u_star = Exact.flatten()[:,None]              
+X_star = np.hstack((T.flatten()[:,None], X.flatten()[:,None])) #Flattened array with the inputs  X and T 
+u_star = Exact.flatten()[:,None]               
 
 # X_star = 2.0*(X_star - np.asarray(lb))/(np.asarray(ub) - np.asarray(lb)) - 1.0
 

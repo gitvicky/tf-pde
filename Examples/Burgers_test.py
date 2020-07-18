@@ -19,8 +19,6 @@ import scipy.io
 
 import tfpde
 
-
-    
 # %%
 #Neural Network Hyperparameters
 NN_parameters = {'Network_Type': 'Regular',
