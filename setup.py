@@ -12,13 +12,11 @@ from os import path
 from setuptools import setup
 from setuptools import find_packages
 
-
-this_directory = path.abspath(path.dirname(__file__))
-with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+with io.open("README.md", "r", encoding="utf-8") as f:
     long_desc = f.read()
 
-with open(path.join(this_directory, 'requirements.txt'), encoding='utf-8') as f:
-    install_requires = f.read()
+with open("requirements.txt", "r") as f:
+    install_requires = [x.strip() for x in f.readlines()]
     
 setup(
     name='tf-pde',
