@@ -20,7 +20,7 @@ with io.open("README.md", "r", encoding="utf-8") as f:
     
 setup(
     name='tf-pde',
-    version='0.5dev',
+    version='0.6dev',
     description="Deep learning library for solving partial differential equations",
     author="Vignesh Gopakumar",
     author_email="vignesh7g@gmail.com",
@@ -29,13 +29,13 @@ setup(
     license='MIT',
     long_description = long_desc,
     long_description_content_type = "text/markdown",
-    install_requires = ['numpy',
-                        'matplotlib',
-                        'scipy',
-                        'sympy',
+    install_requires = ['numpy==1.18.5',
+                        'matplotlib==3.2.1',
+                        'scipy==1.4.1',
+                        'sympy==1.6',
                         'tensorflow==2.2.0',
                         'tensorflow-probability==0.10.0',
-                        'pydoe',
+                        'pydoe==0.3.8',
     ],
 
 )
