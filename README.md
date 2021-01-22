@@ -6,8 +6,9 @@ Automatic Differentiation based Partial Differential Equation solver implemented
 Since the pakcage was built as a proof-of-concept, support for it has been discontinued. However the package still works with the mentioned dependencies. We suggest running the package within a conda environment. 
 
 ```python
-conda create -n NPDE tf-pde
-conda activate NPDE
+conda create -n TFPDE python=3.7
+conda activate TFPDE
+pip install tf-pde
 ```
 
 ### [Example(s)](https://github.com/gitvicky/tf-pde/tree/master/Examples)
