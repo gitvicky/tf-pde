@@ -15,6 +15,8 @@ pip install tf-pde
 To solve a particular PDE using a PINN, the package requires information on the three parameters: neural network hyperparameters, sampling parameters, information about the PDE and the case that we are solving for : 
 
 ```python
+import tfpde 
+
 #Neural Network Hyperparameters
 NN_parameters = {'Network_Type': 'Regular',
                 'input_neurons' : 2,
