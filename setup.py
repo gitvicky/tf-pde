@@ -33,7 +33,7 @@ setup(
                         'matplotlib==3.2.1',
                         'scipy==1.4.1',
                         'sympy==1.6',
-                        'tensorflow==2.2.0',
+                        'tensorflow==2.7.2',
                         'tensorflow-probability==0.10.0',
                         'pydoe==0.3.8',
                         'cloudpickle==1.4.1',
