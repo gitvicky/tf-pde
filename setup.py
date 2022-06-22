@@ -29,7 +29,7 @@ setup(
     license='MIT',
     long_description = long_desc,
     long_description_content_type = "text/markdown",
-    install_requires = ['numpy==1.18.5',
+    install_requires = ['numpy==1.22.0',
                         'matplotlib==3.2.1',
                         'scipy==1.4.1',
                         'sympy==1.6',
