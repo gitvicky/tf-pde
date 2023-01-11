@@ -3,7 +3,7 @@ Automatic Differentiation based Partial Differential Equation solver implemented
 
 ### Installation 
 
-Since the pakcage was built as a proof-of-concept, support for it has been discontinued. However the package still works with the mentioned dependencies. We suggest running the package within a conda environment. 
+Since the package was built as a proof-of-concept, support for it has been discontinued. However the package still works with the mentioned dependencies. We suggest running the package within a conda environment. 
 
 ```python
 conda create -n TFPDE python=3.7
